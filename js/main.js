@@ -27,7 +27,7 @@ window.onload = function() {
         bouncy = game.add.sprite( game.world.centerX, game.world.centerY, 'logo' );
         // Anchor the sprite at its center, as opposed to its top-left corner.
         // so it will be truly centered.
-        bouncy.anchor.setTo( 0.5, 0.5 );
+        bouncy.anchor.setTo( 0.75, 0.5 );
         bouncy.scale.setTo(.5, .5);
         
         // Turn on the arcade physics engine for this sprite.
