@@ -1,4 +1,4 @@
-window.onload = function() {
+window.onload = function () {
     // You might want to start with a template that uses GameStates:
     //     https://github.com/photonstorm/phaser/tree/master/resources/Project%20Templates/Basic
     
@@ -15,40 +15,76 @@ window.onload = function() {
     
     var game = new Phaser.Game( 800, 600, Phaser.AUTO, 'game', { preload: preload, create: create, update: update } );
     
-    function preload() {
-        // Load an image and call it 'logo'.
-        game.load.image( 'logo', 'assets/phaser.png' );
 
-    }
     
-    var bouncy;
-    
-    function create() {
-        // Create a sprite at the center of the screen using the 'logo' image.
-        bouncy = game.add.sprite( game.world.centerX, game.world.centerY, 'logo' );
-        // Anchor the sprite at its center, as opposed to its top-left corner.
-        // so it will be truly centered.
-        bouncy.anchor.setTo( 0.5, 0.5 );
-        bouncy.scale.setTo(.5, .5);
-        
-        // Turn on the arcade physics engine for this sprite.
-        game.physics.enable( bouncy, Phaser.Physics.ARCADE );
-        // Make it bounce off of the world bounds.
-        bouncy.body.collideWorldBounds = true;
-        
-        // Add some text using a CSS style.
-        // Center it in X, and position its top 15 pixels from the top of the world.
-        var style = { font: "25px Verdana", fill: "#9999ff", align: "center" };
-        var text = game.add.text( game.world.centerX, 15, "Build something awesome.", style );
-        text.anchor.setTo( 0.5, 0.0 );
+    function preload() {
+        game.load.spritesheet('dude', 'assets/customSprite.png', 30, 61);
+        game.load.image('ground', 'assets/platform.png');
+        game.load.audio('cheer', 'assets/cheering.wav');
     }
+
+//global variables
+var player;
+var platforms;
+var cursors;
+var sound;
+    
+    function create(){
+        //enable physics
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+        
+        //platforms
+        platforms = game.add.group();
+        platforms.enableBody = true;
+        var ground = platforms.create(0, game.world.height-32, 'ground');
+        ground.scale.setTo(2, 1);
+        ground.body.immovable = true;
+        var ground2 = platforms.create(600, game.world.height-150, 'ground');
+        ground2.scale.setTo(0.5, 5);
+        ground2.body.immovable = true;
+        var ground3 = platforms.create(300, game.world.height-64, 'ground');
+        ground3.scale.setTo(.25, 1);
+        
+        //player
+        player = game.add.sprite(32, game.world.height-150, 'dude');
+        game.physics.arcade.enable(player);
+        player.body.gravity.y = 150;
+        player.body.collideWorldBounds = true;
+        //walk left
+        player.animations.add('left', [3, 2, 1, 0], 10, true);
+        //walk right
+        player.animations.add('right', [5, 6, 7, 8], 10, true);
+        
+        //sound
+        sound = game.add.audio('cheer');
+        
+        //add controls
+        cursors = game.input.keyboard.createCursorKeys();
+    } 
     
     function update() {
-        // Accelerate the 'logo' sprite towards the cursor,
-        // accelerating at 500 pixels/second and moving no faster than 500 pixels/second
-        // in X or Y.
-        // This function returns the rotation angle that makes it visually match its
-        // new trajectory.
-        bouncy.rotation = game.physics.arcade.accelerateToPointer( bouncy, this.game.input.activePointer, 500, 500, 500 );
+        //collide player with platform
+        game.physics.arcade.collide(player, platforms);
+        game.physics.arcade.collide(platforms, platforms);
+        
+        player.body.velocity.x = 0;
+        
+        if(cursors.left.isDown){
+            player.body.velocity.x = -150;
+            player.animations.play('left');
+        }
+        else if(cursors.right.isDown){
+            player.body.velocity.x = 150;
+            player.animations.play('right');
+        }
+        else {
+            player.animations.stop();
+            player.frame = 4;
+        }
+        
+        if (cursors.up.isDown && player.body.touching.down){
+            player.body.velocity.y = -175;
+            sound.play();
+        }
     }
 };
